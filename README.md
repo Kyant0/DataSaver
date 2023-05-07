@@ -33,6 +33,6 @@ SideEffect {
 Supported functions
 | Type | Function | Composable Function |
 | ---- | ---- | ---- |
-| DataSaverMutableState<T> | mutableDataSaverStateOf | rememberDataSaverState |
-| DataSaverMutableListState<T> | mutableDataSaverListStateOf | rememberDataSaverListState |
+| DataSaverMutableState<**T**> | mutableDataSaverStateOf | rememberDataSaverState |
+| DataSaverMutableListState<**T**> | mutableDataSaverListStateOf | rememberDataSaverListState |
 | DataSaverMutableMapState<K, V> | mutableDataSaverMapStateOf | rememberDataSaverMapState |

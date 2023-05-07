@@ -11,7 +11,7 @@ version = "2023.5.1"
 android {
     namespace = "com.kyant.datasaver"
     compileSdk = 33
-    buildToolsVersion = "34.0.0-rc3"
+    buildToolsVersion = "33.0.2"
 
     defaultConfig {
         minSdk = 21
@@ -42,7 +42,7 @@ dependencies {
     val composeVersion = "1.5.0-alpha03"
     implementation("androidx.compose.runtime:runtime:$composeVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.0")
 }
 

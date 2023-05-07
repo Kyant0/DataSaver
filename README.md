@@ -4,6 +4,8 @@ A reimplemented library of https://github.com/FunnySaltyFish/ComposeDataSaver
 
 ## Add to project
 
+[![JitPack Release](https://jitpack.io/v/Kyant0/DataSaver.svg)](https://jitpack.io/#Kyant0/DataSaver)
+
 ```kotlin
 allprojects {
     repositories {

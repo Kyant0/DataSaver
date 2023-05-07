@@ -2,7 +2,7 @@
 
 A reimplemented library of https://github.com/FunnySaltyFish/ComposeDataSaver
 
-## Add in project
+## Add to project
 
 ```kotlin
 allprojects {

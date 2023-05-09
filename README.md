@@ -24,7 +24,7 @@ Init DataSaver in Application.kt:
 DataSaver.init(noBackupFilesDir.absolutePath)
 ```
 
-Then define a DataSaverMutableState:
+Then define a MutableSaveableState:
 
 ```kotlin
 var increment by remember { mutableSaveableStateOf("increment", 0) } // Secondly: In the next launch, increment: 1

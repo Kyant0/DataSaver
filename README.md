@@ -13,19 +13,21 @@ allprojects {
     }
 }
 
-implementation("com.github.Kyant0:DataSaver:2023.5.1")
+implementation("com.github.Kyant0:DataSaver:2023.5.2")
 ```
 
 ## Usage
 
 Init DataSaver in Application.kt:
+
 ```kotlin
 DataSaver.init(noBackupFilesDir.absolutePath)
 ```
 
 Then define a DataSaverMutableState:
+
 ```kotlin
-var increment by rememberDataSaverState("increment", 0) // Secondly: In the next launch, increment: 1
+var increment by remember { mutableSaveableStateOf("increment", 0) } // Secondly: In the next launch, increment: 1
 
 SideEffect {
     increment += 1 // Firstly: increment: 1, saved to local and preserved forever
@@ -33,8 +35,9 @@ SideEffect {
 ```
 
 Supported functions
-| Type | Function | Composable Function |
-| ---- | ---- | ---- |
-| DataSaverMutableState<**T**> | mutableDataSaverStateOf | rememberDataSaverState |
-| DataSaverMutableListState<**T**> | mutableDataSaverListStateOf | rememberDataSaverListState |
-| DataSaverMutableMapState<K, V> | mutableDataSaverMapStateOf | rememberDataSaverMapState |
+
+| Type                            | Function                   |
+|---------------------------------|----------------------------|
+| MutableSaveableState<**T**>     | mutableSaveableStateOf     |
+| MutableSaveableListState<**T**> | mutableSaveableListStateOf |
+| MutableSaveableMapState<K, V>   | mutableSaveableMapStateOf  |

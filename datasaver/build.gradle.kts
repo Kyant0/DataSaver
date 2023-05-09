@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.kyant.datasaver"
-version = "2023.5.1"
+version = "2023.5.2"
 
 android {
     namespace = "com.kyant.datasaver"
@@ -39,8 +39,7 @@ android {
 }
 
 dependencies {
-    val composeVersion = "1.5.0-alpha03"
-    implementation("androidx.compose.runtime:runtime:$composeVersion")
+    implementation("androidx.compose.runtime:runtime:1.5.0-alpha03")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.0")
@@ -52,7 +51,7 @@ afterEvaluate {
             register("mavenRelease", MavenPublication::class) {
                 groupId = "com.kyant"
                 artifactId = "datasaver"
-                version = "2023.5.1"
+                version = "2023.5.2"
                 from(components["release"])
             }
         }

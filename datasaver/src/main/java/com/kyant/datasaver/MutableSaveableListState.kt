@@ -1,10 +1,7 @@
 package com.kyant.datasaver
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +10,25 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 
-class DataSaverMutableListState<T>(
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified T> mutableSaveableListStateOf(
+    key: String,
+    initialValue: List<T> = emptyList(),
+    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
+    saver: DataSaver<List<T>> = DataSaver(
+        save = { ProtoBuf.encodeToByteArray(it) },
+        load = { ProtoBuf.decodeFromByteArray(it) }
+    )
+): MutableSaveableListState<T> {
+    val data = try {
+        saver.readData(key, initialValue)
+    } catch (_: Exception) {
+        initialValue
+    }
+    return MutableSaveableListState(saver, key, data, savePolicy)
+}
+
+class MutableSaveableListState<T>(
     private val dataSaver: DataSaver<List<T>>,
     private val key: String,
     private val initialValue: List<T> = emptyList(),
@@ -177,66 +192,5 @@ class DataSaverMutableListState<T>(
 
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-@Composable
-inline fun <reified T : Any> rememberDataSaverListState(
-    key: String,
-    initialValue: List<T> = emptyList(),
-    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
-    saver: DataSaver<List<T>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-): DataSaverMutableListState<T> {
-    var state: DataSaverMutableListState<T>? = null
-    DisposableEffect(key, savePolicy) {
-        onDispose {
-            state?.let {
-                if (savePolicy == SavePolicy.DISPOSED && it.valueChangedSinceInit()) {
-                    it.saveData()
-                }
-            }
-        }
-    }
-    return remember(saver, key) {
-        mutableDataSaverListStateOf(key, initialValue, savePolicy, saver).also {
-            state = it
-        }
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> mutableDataSaverListStateOf(
-    key: String,
-    initialValue: List<T> = emptyList(),
-    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
-    saver: DataSaver<List<T>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-): DataSaverMutableListState<T> {
-    val data = try {
-        saver.readData(key, initialValue)
-    } catch (_: Exception) {
-        initialValue
-    }
-    return DataSaverMutableListState(saver, key, data, savePolicy)
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> saveDataSaverListState(
-    key: String,
-    value: List<T> = emptyList(),
-    saver: DataSaver<List<T>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-) {
-    try {
-        saver.saveData(key, value)
-    } catch (_: Exception) {
     }
 }

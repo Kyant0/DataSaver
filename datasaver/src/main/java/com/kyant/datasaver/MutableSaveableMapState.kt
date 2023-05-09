@@ -1,10 +1,7 @@
 package com.kyant.datasaver
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +10,25 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 
-class DataSaverMutableMapState<K, V>(
+@OptIn(ExperimentalSerializationApi::class)
+inline fun <reified K, reified V> mutableSaveableMapStateOf(
+    key: String,
+    initialValue: Map<K, V> = emptyMap(),
+    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
+    saver: DataSaver<Map<K, V>> = DataSaver(
+        save = { ProtoBuf.encodeToByteArray(it) },
+        load = { ProtoBuf.decodeFromByteArray(it) }
+    )
+): MutableSaveableMapState<K, V> {
+    val data = try {
+        saver.readData(key, initialValue)
+    } catch (_: Exception) {
+        initialValue
+    }
+    return MutableSaveableMapState(saver, key, data, savePolicy)
+}
+
+class MutableSaveableMapState<K, V>(
     private val dataSaver: DataSaver<Map<K, V>>,
     private val key: String,
     private val initialValue: Map<K, V> = emptyMap(),
@@ -111,66 +126,5 @@ class DataSaverMutableMapState<K, V>(
 
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-@Composable
-inline fun <reified K, reified V> rememberDataSaverMapState(
-    key: String,
-    initialValue: Map<K, V> = emptyMap(),
-    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
-    saver: DataSaver<Map<K, V>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-): DataSaverMutableMapState<K, V> {
-    var state: DataSaverMutableMapState<K, V>? = null
-    DisposableEffect(key, savePolicy) {
-        onDispose {
-            state?.let {
-                if (savePolicy == SavePolicy.DISPOSED && it.valueChangedSinceInit()) {
-                    it.saveData()
-                }
-            }
-        }
-    }
-    return remember(saver, key) {
-        mutableDataSaverMapStateOf(key, initialValue, savePolicy, saver).also {
-            state = it
-        }
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-inline fun <reified K, reified V> mutableDataSaverMapStateOf(
-    key: String,
-    initialValue: Map<K, V> = emptyMap(),
-    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
-    saver: DataSaver<Map<K, V>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-): DataSaverMutableMapState<K, V> {
-    val data = try {
-        saver.readData(key, initialValue)
-    } catch (_: Exception) {
-        initialValue
-    }
-    return DataSaverMutableMapState(saver, key, data, savePolicy)
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-inline fun <reified K : Any, reified V : Any> saveDataSaverMapState(
-    key: String,
-    value: Map<K, V> = emptyMap(),
-    saver: DataSaver<Map<K, V>> = DataSaver(
-        save = { ProtoBuf.encodeToByteArray(it) },
-        load = { ProtoBuf.decodeFromByteArray(it) }
-    )
-) {
-    try {
-        saver.saveData(key, value)
-    } catch (_: Exception) {
     }
 }

@@ -13,7 +13,7 @@ allprojects {
     }
 }
 
-implementation("com.github.Kyant0:DataSaver:2023.5.3")
+implementation("com.github.Kyant0:DataSaver:2023.5.5")
 ```
 
 ## Usage

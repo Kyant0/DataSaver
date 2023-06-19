@@ -13,7 +13,7 @@ allprojects {
     }
 }
 
-implementation("com.github.Kyant0:DataSaver:2023.5.6")
+implementation("com.github.Kyant0:DataSaver:2023.6.1")
 ```
 
 ## Usage
@@ -27,10 +27,10 @@ DataSaver.init(noBackupFilesDir.absolutePath)
 Then define a MutableSaveableState:
 
 ```kotlin
-var increment by remember { mutableSaveableStateOf("increment", 0) } // Secondly: In the next launch, increment: 1
+var increment by remember { mutableSaveableStateOf(0) }
 
 SideEffect {
-    increment += 1 // Firstly: increment: 1, saved to local and preserved forever
+    increment += 1
 }
 ```
 

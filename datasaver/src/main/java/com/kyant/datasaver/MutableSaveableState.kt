@@ -13,70 +13,54 @@ import kotlinx.serialization.protobuf.ProtoBuf
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> mutableSaveableStateOf(
-    key: String,
     initialValue: T,
-    savePolicy: SavePolicy = SavePolicy.IMMEDIATELY,
     saver: DataSaver<T> = DataSaver(
         save = { ProtoBuf.encodeToByteArray(it) },
         load = { ProtoBuf.decodeFromByteArray(it) }
     )
-): MutableSaveableState<T> {
-    val data = try {
-        saver.readData(key, initialValue)
-    } catch (_: Exception) {
-        initialValue
-    }
-    return MutableSaveableState(saver, key, data, savePolicy)
-}
+): MutableSaveableState<T> = MutableSaveableState(saver, initialValue)
 
 class MutableSaveableState<T>(
     private val dataSaver: DataSaver<T>,
-    private val key: String,
-    private val initialValue: T,
-    private val savePolicy: SavePolicy = SavePolicy.IMMEDIATELY
-) : MutableState<T> {
-    private val state = mutableStateOf(initialValue)
-
-    override var value: T
-        get() = state.value
-        set(value) {
-            doSetValue(value)
-        }
+    private val initialValue: T
+) {
+    private lateinit var key: String
+    private lateinit var state: MutableState<T>
 
     operator fun setValue(thisObj: Any?, property: KProperty<*>, value: T) {
-        doSetValue(value)
-    }
-
-    operator fun getValue(thisObj: Any?, property: KProperty<*>): T = state.value
-
-    fun saveData() {
-        value?.let {
-            scope.launch {
-                dataSaver.saveData(key, it)
-            }
-        } ?: run {
-            dataSaver.remove(key)
-        }
-    }
-
-    fun remove(replacement: T = initialValue) {
-        dataSaver.remove(key)
-        state.value = replacement
-    }
-
-    fun valueChangedSinceInit() = state.value != initialValue
-
-    private fun doSetValue(value: T) {
+        init(thisObj, property)
         val oldValue = this.state.value
         this.state.value = value
-        if (oldValue != value && savePolicy == SavePolicy.IMMEDIATELY) {
-            saveData()
+        if (oldValue != value) {
+            if (value != null) {
+                value.let {
+                    scope.launch {
+                        dataSaver.saveData(key, it)
+                    }
+                }
+            } else {
+                dataSaver.remove(key)
+            }
         }
     }
 
-    override operator fun component1() = state.value
+    operator fun getValue(thisObj: Any?, property: KProperty<*>): T {
+        init(thisObj, property)
+        return state.value
+    }
 
-    override operator fun component2(): (T) -> Unit = ::doSetValue
+    private fun init(thisObj: Any?, property: KProperty<*>) {
+        if (!::key.isInitialized) {
+            key = DataSaverKeyGenerator.generate(thisObj, property)
+            state = mutableStateOf(
+                try {
+                    dataSaver.readData(key, initialValue)
+                } catch (_: Exception) {
+                    initialValue
+                }
+            )
+        }
+    }
 
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)

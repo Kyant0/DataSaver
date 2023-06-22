@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.kyant.datasaver"
-version = "2023.6.2"
+version = "2023.6.1"
 
 android {
     namespace = "com.kyant.datasaver"
@@ -51,7 +51,7 @@ afterEvaluate {
             register("mavenRelease", MavenPublication::class) {
                 groupId = "com.kyant"
                 artifactId = "datasaver"
-                version = "2023.6.2"
+                version = "2023.6.1"
                 from(components["release"])
             }
         }

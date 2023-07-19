@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.kyant.datasaver"
-version = "2023.6.2"
+version = "2023.7.1"
 
 android {
     namespace = "com.kyant.datasaver"
@@ -41,7 +41,7 @@ android {
 dependencies {
     implementation("androidx.compose.runtime:runtime:1.6.0-alpha01")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.5.1")
 }
 
@@ -51,7 +51,7 @@ afterEvaluate {
             register("mavenRelease", MavenPublication::class) {
                 groupId = "com.kyant"
                 artifactId = "datasaver"
-                version = "2023.6.2"
+                version = "2023.7.1"
                 from(components["release"])
             }
         }

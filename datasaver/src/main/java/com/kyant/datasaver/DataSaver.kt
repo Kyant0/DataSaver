@@ -14,7 +14,7 @@ class DataSaver<T>(
     fun saveData(key: String, data: T) {
         return try {
             lock.write {
-                val file = File(location, key)
+                val file = File(path, key)
                 file.writeBytes(save(data))
             }
         } catch (e: Exception) {
@@ -25,7 +25,7 @@ class DataSaver<T>(
     fun readData(key: String, default: T): T {
         return try {
             lock.read {
-                val file = File(location, key)
+                val file = File(path, key)
                 if (file.exists()) {
                     load(file.readBytes())
                 } else {
@@ -40,17 +40,17 @@ class DataSaver<T>(
 
     fun remove(key: String) {
         try {
-            File(location, key).delete()
+            File(path, key).delete()
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
     companion object {
-        private lateinit var location: String
+        private lateinit var path: String
 
         fun init(location: String) {
-            this.location = location
+            this.path = location
         }
     }
 }

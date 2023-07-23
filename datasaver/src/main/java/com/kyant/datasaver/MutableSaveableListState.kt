@@ -35,6 +35,26 @@ class MutableSaveableListState<T>(
     private val savePolicy: SavePolicy = SavePolicy.IMMEDIATELY
 ) : MutableState<List<T>>, MutableList<T> {
     private val list = mutableStateOf(initialValue)
+
+    override var value: List<T>
+        get() = list.value
+        set(value) {
+            doSetValue(value)
+        }
+
+    override fun component1(): List<T> = value
+
+    override fun component2(): (List<T>) -> Unit = ::doSetValue
+
+    private fun doSetValue(value: List<T>) {
+        list.value = value
+        if (savePolicy == SavePolicy.IMMEDIATELY) {
+            scope.launch {
+                dataSaver.saveData(key, value)
+            }
+        }
+    }
+
     override val size: Int
         get() = list.value.size
 
@@ -151,44 +171,10 @@ class MutableSaveableListState<T>(
         doSetValue(elements.toList())
     }
 
-    override var value: List<T>
-        get() = list.value
-        set(value) {
-            doSetValue(value)
-        }
-
-    fun saveData() {
-        scope.launch {
-            dataSaver.saveData(key, value)
-        }
-    }
-
-    fun valueChangedSinceInit() = list.value.deepEquals(initialValue)
-
-    private fun <T> List<T>.deepEquals(other: List<T>): Boolean {
-        if (size != other.size) return false
-        for (i in indices) {
-            if (this[i] != other[i]) return false
-        }
-        return true
-    }
-
     fun remove(replacement: List<T> = initialValue) {
         dataSaver.remove(key)
         list.value = replacement
     }
-
-    private fun doSetValue(value: List<T>) {
-        val oldValue = list
-        list.value = value
-        if (oldValue != value && savePolicy == SavePolicy.IMMEDIATELY) {
-            saveData()
-        }
-    }
-
-    override fun component1(): List<T> = value
-
-    override fun component2(): (List<T>) -> Unit = ::doSetValue
 
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)

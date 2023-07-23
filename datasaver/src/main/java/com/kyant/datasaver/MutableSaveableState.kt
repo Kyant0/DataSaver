@@ -23,24 +23,27 @@ inline fun <reified T> mutableSaveableStateOf(
 class MutableSaveableState<T>(
     private val dataSaver: DataSaver<T>,
     private val initialValue: T
-) {
+) : MutableState<T> {
     private lateinit var key: String
     private lateinit var state: MutableState<T>
 
+    override var value: T
+        get() = state.value
+        set(_) = error("MutableSaveableState can't be set directly, use delegated property instead")
+
+    override fun component1() = value
+
+    override fun component2() = error("MutableSaveableState can't be deconstructed, use delegated property instead")
+
     operator fun setValue(thisObj: Any?, property: KProperty<*>, value: T) {
         init(thisObj, property)
-        val oldValue = this.state.value
-        this.state.value = value
-        if (oldValue != value) {
-            if (value != null) {
-                value.let {
-                    scope.launch {
-                        dataSaver.saveData(key, it)
-                    }
-                }
-            } else {
-                dataSaver.remove(key)
+        state.value = value
+        value?.let {
+            scope.launch {
+                dataSaver.saveData(key, it)
             }
+        } ?: run {
+            dataSaver.remove(key)
         }
     }
 

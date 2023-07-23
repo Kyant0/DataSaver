@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.kyant.datasaver"
-version = "2023.7.2"
+version = "2023.7.3"
 
 android {
     namespace = "com.kyant.datasaver"
@@ -15,6 +15,7 @@ android {
 
     defaultConfig {
         minSdk = 21
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -51,7 +52,7 @@ afterEvaluate {
             register("mavenRelease", MavenPublication::class) {
                 groupId = "com.kyant"
                 artifactId = "datasaver"
-                version = "2023.7.2"
+                version = "2023.7.3"
                 from(components["release"])
             }
         }

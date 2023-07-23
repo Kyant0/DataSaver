@@ -36,6 +36,25 @@ class MutableSaveableMapState<K, V>(
 ) : MutableState<Map<K, V>>, MutableMap<K, V> {
     private val map = mutableStateOf(initialValue)
 
+    override var value: Map<K, V>
+        get() = map.value
+        set(value) {
+            doSetValue(value)
+        }
+
+    override fun component1(): Map<K, V> = value
+
+    override fun component2(): (Map<K, V>) -> Unit = ::doSetValue
+
+    private fun doSetValue(value: Map<K, V>) {
+        map.value = value
+        if (savePolicy == SavePolicy.IMMEDIATELY) {
+            scope.launch {
+                dataSaver.saveData(key, value)
+            }
+        }
+    }
+
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() = map.value.toMutableMap().entries
     override val keys: MutableSet<K>
@@ -85,44 +104,10 @@ class MutableSaveableMapState<K, V>(
         doSetValue(elements.toMap())
     }
 
-    override var value: Map<K, V>
-        get() = map.value
-        set(value) {
-            doSetValue(value)
-        }
-
-    fun saveData() {
-        scope.launch {
-            dataSaver.saveData(key, value)
-        }
-    }
-
-    fun valueChangedSinceInit() = map.value.deepEquals(initialValue)
-
-    private fun <K, V> Map<K, V>.deepEquals(other: Map<K, V>): Boolean {
-        if (size != other.size) return false
-        for ((key, value) in this) {
-            if (value != other[key]) return false
-        }
-        return true
-    }
-
     fun remove(replacement: Map<K, V> = initialValue) {
         dataSaver.remove(key)
         map.value = replacement
     }
-
-    private fun doSetValue(value: Map<K, V>) {
-        val oldValue = map
-        map.value = value
-        if (oldValue != value && savePolicy == SavePolicy.IMMEDIATELY) {
-            saveData()
-        }
-    }
-
-    override fun component1(): Map<K, V> = value
-
-    override fun component2(): (Map<K, V>) -> Unit = ::doSetValue
 
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)

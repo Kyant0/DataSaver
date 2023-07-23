@@ -14,8 +14,7 @@ class DataSaver<T>(
     fun saveData(key: String, data: T) {
         return try {
             lock.write {
-                val file = File(path, key)
-                file.writeBytes(save(data))
+                File(path, key).writeBytes(save(data))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -49,8 +48,8 @@ class DataSaver<T>(
     companion object {
         private lateinit var path: String
 
-        fun init(location: String) {
-            this.path = location
+        fun init(path: String) {
+            this.path = path
         }
     }
 }
